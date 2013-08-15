@@ -2,6 +2,8 @@ package com.test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
@@ -20,7 +22,7 @@ public class OrgManager
 	{
 		loadAllOrgs();
 		
-		loadReplicas();
+		//loadReplicas();
 	}
 	
 	public void loadAllOrgs()
@@ -70,23 +72,26 @@ public class OrgManager
 		{
 			XLSHandler orgXLS = new XLSHandler();
 			ArrayList<HashMap<String, String>> replicaData = orgXLS.getExcelRows("C:\\temp\\Replicas.xlsx");
-			LOGGER.info("Setting Replicas : ");
-			for(HashMap<String, String> liveUserRow: replicaData)
+			LOGGER.info("Loading Replicas from sheet: ");
+			Set<String> userCodes = new HashSet<String>();
+			//fetch all available user codes
+			for(HashMap<String, String> row: replicaData)
 			{
-				Org liveOrg = orgMap.get(liveUserRow.get("ORGNAME"));
-				User liveUser = new User();
-				liveUser.setUserName(liveUserRow.get("USERNAME"));
-				liveUser.setUserCode(liveUserRow.get("USERCODE"));
-				liveUser.setUserId(liveUserRow.get(liveOrg.getOrgName()));
-				liveOrg.addLiveUser(liveUser);
-				
-				for(Org replicaOrg: orgMap.values())
+				userCodes.add(row.get("USERCODE"));
+			}
+			for(HashMap<String, String> row: replicaData)
+			{
+				Org org = orgMap.get(row.get("ORGNAME"));
+				User user = new User();
+				user.setUserName(row.get("USERNAME"));
+				user.setUserCode(row.get("USERCODE"));
+				user.setUserId(row.get(user.getUserCode()));
+				org.addLiveUser(user);
+								
+				for(String uCode: userCodes)
 				{
-					if(liveOrg.getOrgName() != replicaOrg.getOrgName())
-					{
-						liveOrg.addReplicaUser(liveUser.getUserCode(), replicaOrg.getOrgName(), liveUserRow.get(replicaOrg.getOrgName()));
-					}
-				}
+					org.addReplicaUser(user.getUserCode(), uCode, row.get(uCode));
+				}				
 			}
 		}
 	}
@@ -107,31 +112,34 @@ public class OrgManager
 			LOGGER.info("Setting Replicas :  ");
 			for(HashMap<String, String> liveUserRow: replicaData)
 			{
-				String liveUserName = liveUserRow.get("USERNAME");				
-				Org liveOrg = orgMap.get(liveUserRow.get("ORGNAME"));
-				User liveUser = liveOrg.users.get(liveUserName);
-				liveUser.setUserCode(liveUserRow.get("USERCODE"));
-				LOGGER.info("Replicas for : " + liveUserName + " in " + liveOrg.getOrgName());
-				for(Org replicaOrg: orgMap.values())
-				{
-					if(liveOrg.getOrgName() != replicaOrg.getOrgName())
-					{
-						String replicaUserId = liveUser.getUserId().toLowerCase() + "." + liveOrg.getOrgId().toLowerCase() + "@" + replicaOrg.getOrgId().toLowerCase() + ".dup"; 
-						if(replicaOrg.users.containsKey(replicaUserId))
-						{
-							HashMap<String, User> replicaUsers = replicaOrg.replicaUsers.containsKey(liveUser.getUserName())?liveOrg.replicaUsers.get(liveUser.getUserName()): new HashMap<String, User>(); 
-							replicaUsers.put(liveOrg.getOrgName(), replicaOrg.users.get(replicaUserId));							
-							replicaOrg.replicaUsers.put(liveUser.getUserName(), replicaUsers);
-						}
-					}
-					else
-					{
-						HashMap<String, User> replicaUsers = liveOrg.replicaUsers.containsKey(liveUser.getUserName())?liveOrg.replicaUsers.get(liveUser.getUserName()): new HashMap<String, User>(); 
-						replicaUsers.put(liveOrg.getOrgName(), liveUser);							
-						liveOrg.replicaUsers.put(liveUser.getUserName(), replicaUsers);
-					}
-				}
+				String rowUserName = liveUserRow.get("USERNAME");												
+				String rowUserCode = liveUserRow.get("USERCODE");				
+				Org rowOrg = orgMap.get(liveUserRow.get("ORGNAME"));
+				User rowUser = rowOrg.users.get(liveUserRow.get("USERNAME"));
+				rowUser.setUserCode(rowUserCode);
+				LOGGER.info("Replicas for : " + rowUserName + " for " + rowUserCode);								
 				
+				for(HashMap<String, String> row2: replicaData)
+				{
+					String rowUserName2 = row2.get("USERNAME");												
+					String rowUserCode2 = row2.get("USERCODE");
+					Org rowOrg2 = orgMap.get(row2.get("ORGNAME"));
+					User rowUser2 = rowOrg2.users.get(row2.get("USERNAME"));
+					String username = "";
+					if(rowOrg.getOrgName() == rowOrg2.getOrgName())					
+						username = rowUserName2;					
+					else 
+					{
+						username = rowUser2.getUserId().toLowerCase() + "." + rowOrg2.getOrgId().toLowerCase() + "@" + rowOrg.getOrgId().toLowerCase() + ".dup"; 
+					}
+					if(rowOrg.users.containsKey(username))
+						{
+							
+							HashMap<String, User> replicaUsers = rowOrg.replicaUsers.containsKey(rowUser.getUserCode())?rowOrg.replicaUsers.get(rowUser.getUserCode()): new HashMap<String, User>(); 
+							replicaUsers.put(rowUserCode2, rowOrg.users.get(username));							
+							rowOrg.replicaUsers.put(rowUser.getUserCode(), replicaUsers);
+						}										
+				}								
 			}
 			LOGGER.info("Writting Replicas to Sheet: ");
 			writeReplicas();
@@ -143,34 +151,21 @@ public class OrgManager
 		LOGGER.info("Start Writting Replicas to Sheet: ");
 		if(orgMap!=null && orgMap.size()>0)
 		{
-			ArrayList<HashMap<String, String>> xlRows = new ArrayList<HashMap<String, String>>();
+			XLSHandler xls = new XLSHandler();
+			ArrayList<HashMap<String, String>> replicaData = xls.getExcelRows("C:\\temp\\Replicas.xlsx");
 			
-			ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
-			for(Org o: orgMap.values())
+			LOGGER.info("Writting Replicas :  ");
+			for(HashMap<String, String> userRow: replicaData)
 			{
-				HashMap<String, HashMap<String, User>>  replicaUsers = o.replicaUsers;
-				for(String liveUserName: replicaUsers.keySet())
+				Org org = orgMap.get(userRow.get("ORGNAME"));
+				String userCode = userRow.get("USERCODE");
+				HashMap<String, User> replicas = org.replicaUsers.get(userCode);
+				for(String repCode: replicas.keySet())
 				{
-					HashMap<String, User> replicaUserMap = replicaUsers.get(liveUserName);
-					
-					HashMap<String, String> row = new HashMap<String, String>();
-					row.put("OrgName", o.getOrgName());
-					//row.put("UserCode", );								
-					row.put("UserName", liveUserName);
-					row.put("UserCode", replicaUserMap.get(o.getOrgName()).getUserCode());
-					
-					for(String orgName: replicaUserMap.keySet())
-					{
-						row.put(orgName, replicaUserMap.get(orgName).getUserId());
-					}
-					xlRows.add(row);
-				}
+					userRow.put(repCode, replicas.get(repCode).getUserId());
+				}								
 			}
-			if(xlRows.size()>0)
-			{
-				XLSHandler xls = new XLSHandler();
-				xls.writeExcelFileData("C:\\temp\\Replicas.xlsx", xlRows);
-			}
+			xls.writeExcelFileData("C:\\temp\\Replicas.xlsx", replicaData);
 		}
 	}
 }

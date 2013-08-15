@@ -158,12 +158,12 @@ public class SFDC {
 				if(key!="SOBJECTTYPE") 
 				{
 					Object obj = record.get(key);
-					if(obj instanceof Date) 
-						sobject.setField(key, (Date)obj);						
+					if(obj instanceof String) 
+						sobject.setField(key, (String)obj);						
 					else if(obj instanceof Boolean)
 						sobject.setField(key, (Boolean)obj);
-					else if(obj instanceof String)
-						sobject.setField(key, (String)obj);
+					else if(obj instanceof Date)
+						sobject.setField(key, (Date)obj);
 					else if(obj instanceof Double)
 						sobject.setField(key, (Double)obj);
 					if(obj==null)

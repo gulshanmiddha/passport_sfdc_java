@@ -23,7 +23,7 @@ public class Org {
 		this.orgId = orgId;
 	}
 
-	private SFDC sfdc;
+	public SFDC sfdc;
     public HashMap<String, User>  users;
     public HashMap<String, HashMap<String, User>>  replicaUsers; // liveusername and related replica users        
     
@@ -85,7 +85,7 @@ public class Org {
 			users = new HashMap<String, User>();
 		users.put(u.getUserCode(), u);
 	}
-	public void addReplicaUser(String liveUserCode, String replicaOrg, String replicaUserId)
+	public void addReplicaUser(String liveUserCode, String replicaUserCode, String replicaUserId)
 	{
 		if(replicaUsers == null)
 			replicaUsers = new HashMap<String, HashMap<String, User>>();
@@ -96,7 +96,7 @@ public class Org {
 		
 		User u = new User();
 		u.setUserId(replicaUserId);
-		replicas.put(replicaOrg, u);		
+		replicas.put(replicaUserCode, u);		
 		
 		replicaUsers.put(liveUserCode, replicas);
 	}

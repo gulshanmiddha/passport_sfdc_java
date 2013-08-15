@@ -1,15 +1,28 @@
 package com.config;
 
 public final class AppConfig {
-	
-    // SFDC
-    private String sfdcEndpoint;
-    private String sfdcUsername;
-    private String sfdcPassword;
-    private String orgUsersFile;
+	 
     private Boolean clearDataByDefault;
+    private int checkForSecondsPerIteration;
+    private int numberOfIterations;
 
-    public Boolean getClearDataByDefault() {
+    public int getCheckForSecondsPerIteration() {
+		return checkForSecondsPerIteration;
+	}
+
+	public void setCheckForSecondsPerIteration(int checkForSecondsPerIteration) {
+		this.checkForSecondsPerIteration = checkForSecondsPerIteration;
+	}
+
+	public int getNumberOfIterations() {
+		return numberOfIterations;
+	}
+
+	public void setNumberOfIterations(int numberOfIterations) {
+		this.numberOfIterations = numberOfIterations;
+	}
+
+	public Boolean getClearDataByDefault() {
         return clearDataByDefault;
     }
 
@@ -17,34 +30,6 @@ public final class AppConfig {
         this.clearDataByDefault = clearDataByDefault;
     }
 
-    public String getOrgUsersFile() {
-        return orgUsersFile;
-    }
-
-    public void setOrgUsersFile(String orgUsersFile) {
-        this.orgUsersFile = orgUsersFile;
-    }  
-    
-    public String getSfdcEndpoint() {
-        return sfdcEndpoint;
-    }
-    public void setSfdcEndpoint(String sfdcEndpoint) {
-        this.sfdcEndpoint = sfdcEndpoint;
-    }
-    
-    public String getSfdcUsername() {
-        return sfdcUsername;
-    }
-    public void setSfdcUsername(String sfdcUsername) {
-        this.sfdcUsername = sfdcUsername;
-    }
-    
-    public String getSfdcPassword() {
-        return sfdcPassword;
-    }
-    public void setSfdcPassword(String sfdcPassword) {
-        this.sfdcPassword = sfdcPassword;
-    }
-   
+       
     
 }

@@ -1,6 +1,7 @@
 package com.test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class TestCase {
@@ -13,7 +14,16 @@ public class TestCase {
 	private String Message;
 	private String Action;
 	private String Status;
+	public HashMap<String, String> result = new HashMap<String, String>();
+	public HashMap<String, String> resultIds = new HashMap<String, String>();
 	private String recordId;
+	private String createdDate;
+	public String getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
 	public String getRecordId() {
 		return recordId;
 	}

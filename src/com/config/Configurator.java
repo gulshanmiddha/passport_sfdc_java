@@ -50,35 +50,16 @@ public class Configurator {
                 LOGGER.info("Canonical path ==== "+ directory.getCanonicalPath());
                 
                 FileInputStream fis ;
-                
-                try{
                     fis = new FileInputStream("C:/Temp/Passport.properties");
-                }catch(FileNotFoundException e){
-                    try{
-                        LOGGER.info("Canonical path ====" + directory.getCanonicalPath().substring(0,directory.getCanonicalPath().lastIndexOf("\\")) + "\\webapps\\GenerateReports\\Passport.properties");
-                        fis = new FileInputStream(directory.getCanonicalPath().substring(0,directory.getCanonicalPath().lastIndexOf("\\")) + "\\webapps\\GenerateReports\\Passport.properties"); 
-                    }catch(Exception e1){
-                        LOGGER.info("Canonical path ====" + directory.getCanonicalPath()+ "\\webapps\\GenerateReports\\Passport.properties");
-                        fis = new FileInputStream(directory.getCanonicalPath()+ "\\webapps\\GenerateReports\\Passport.properties"); 
-                    }
-                }catch(Exception e){
-                    fis = new FileInputStream("C:/Passport.properties");
-                }                
-                             
-                props.load(fis);
-               
-                LOGGER.info(" Configuration Properties loaded successfully ");
-                appConfig.setSfdcEndpoint(props.getProperty("sfdc.sfdcEndpoint"));
-                appConfig.setSfdcUsername(props.getProperty("sfdc.sfdcUsername"));
-                appConfig.setSfdcPassword(props.getProperty("sfdc.sfdcPassword"));
-                appConfig.setOrgUsersFile(props.getProperty("file.orgUserIdsFilePath"));
-                appConfig.setClearDataByDefault(props.getProperty("passport.clearAllDataByDefault").toUpperCase().equals("YES") ? Boolean.TRUE : Boolean.FALSE);
-                
-
+                    props.load(fis);
+                    appConfig.setClearDataByDefault(props.getProperty("clearAllDataByDefault").toUpperCase().equals("YES") ? Boolean.TRUE : Boolean.FALSE);
+                    appConfig.setCheckForSecondsPerIteration(Integer.parseInt(props.getProperty("checkForSecondsPerIteration")));
+                    appConfig.setNumberOfIterations(Integer.parseInt(props.getProperty("numberOfIterations")));
+                    LOGGER.info(" Configuration Properties loaded successfully ");                                        
+                    
 
         } catch (Exception e) {
-            LOGGER.error("Exception while configuring the Application credentials ..." + e);
-            //throw new ResilientException(e.getMessage());
+        	LOGGER.error("CANNOT SET PASSPORT PROPERTIES ..." + e.getMessage());
         } 
         return appConfig;
     }
